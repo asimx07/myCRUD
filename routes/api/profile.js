@@ -14,8 +14,9 @@ router.get("/test", (req, res) => res.json({ msg: "User Works" }));
 //@access Public
 
 router.post("/register", (req, res) => {
+  console.log({ backend: req.body });
+
   const { errors, isValid } = validateRegisterInput(req.body);
-  console.log(req.body);
 
   if (!isValid) {
     return res.status(400).json(errors);
@@ -44,7 +45,7 @@ router.post("/register", (req, res) => {
 });
 
 // @route   GET api/profile/all/
-// @desc    Get profile by email
+// @desc    Get all records
 // @access  Public
 
 router.get("/all", (req, res) => {
@@ -114,24 +115,31 @@ router.put("/update/:email", (req, res) => {
     .catch(err => req.json({ msg: "pehla hai" + err }));
 });
 
-// @route   DELETE api/profile/email/:email_id
+// @route   DELETE api/profile/deleteuser/:email_id
 // @desc    Delete User
 // @access  Public
 router.delete("/deleteuser/:email", (req, res) => {
+  console.log(req.params.email);
   profile
-    .findOneAndDelete(req.params.email)
-    .then(result => {
-      res.json({
-        success: true,
-        msg: `It has been deleted.`,
-        result: {
-          _id: result._id,
-          name: result.name,
-          email: result.email,
-          age: result.age,
-          gender: result.gender
-        }
-      });
+    .findOne({ email: req.params.email })
+    .then(Profile => {
+      const id = Profile._id;
+      console.log(id);
+      if (Profile) {
+        profile.findByIdAndDelete(id).then(result => {
+          res.json({
+            success: true,
+            msg: `It has been deleted.`,
+            result: {
+              _id: result._id,
+              name: result.name,
+              email: result.email,
+              age: result.age,
+              gender: result.gender
+            }
+          });
+        });
+      }
     })
     .catch(err => {
       res.status(404).json({ success: false, msg: "Nothing to delete." });
